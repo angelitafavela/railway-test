@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Farm Photo Drop — TR Ranch</title>
+  <link rel="stylesheet" href="/style.css" />
+  <meta name="theme-color" content="#2d4a2d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
+<body>
+
+<!-- ── AUTH SCREEN ── -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-icon">🌿</span>
+      <h1>TR Ranch</h1>
+      <p>Farm Photo Drop</p>
+    </div>
+
+    <!-- Step 1: Invite Code -->
+    <div id="step-code" class="auth-step active">
+      <h2>Enter Invite Code</h2>
+      <p>This is a private gallery for TR Ranch family & friends.</p>
+      <div class="input-group">
+        <label>Invite Code</label>
+        <input type="password" id="invite-code-input" placeholder="Enter your code" autocomplete="off" />
+      </div>
+      <button class="btn btn-primary" onclick="submitCode()">Continue →</button>
+      <div id="code-error" class="msg-error">That code isn't right. Try again.</div>
+    </div>
+
+    <!-- Step 2: Name -->
+    <div id="step-name" class="auth-step">
+      <h2>What's your name?</h2>
+      <p>So we know who's sharing the great shots.</p>
+      <div class="input-group">
+        <label>Your Name</label>
+        <input type="text" id="name-input" placeholder="First name is fine" autocomplete="name" />
+      </div>
+      <button class="btn btn-primary" onclick="submitName()">Enter the Farm →</button>
+      <div id="name-error" class="msg-error">Please enter your name to continue.</div>
+    </div>
+
+    <div class="admin-login-link">
+      <a href="#" onclick="showAdminLogin(); return false;">Admin login</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP SCREEN ── -->
+<div id="app-screen" class="screen">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-logo">
+      <span>🌿</span>
+      <h1>TR Ranch</h1>
+    </div>
+    <div class="header-actions">
+      <div id="admin-badge" class="admin-badge" style="display:none">Admin</div>
+      <div class="user-badge">
+        <span>👤</span>
+        <span id="user-name-display"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-chip active" data-filter="all" onclick="setFilter('all', this)">📷 All</button>
+    <button class="filter-chip" data-filter="fav" onclick="setFilter('fav', this)">⭐ Favorites</button>
+    <button class="filter-chip season-spring" data-filter="Spring" onclick="setFilter('Spring', this)">🌸 Spring</button>
+    <button class="filter-chip season-summer" data-filter="Summer" onclick="setFilter('Summer', this)">☀️ Summer</button>
+    <button class="filter-chip season-fall" data-filter="Fall" onclick="setFilter('Fall', this)">🍂 Fall</button>
+    <button class="filter-chip season-winter" data-filter="Winter" onclick="setFilter('Winter', this)">❄️ Winter</button>
+    <button class="filter-chip" data-filter="tag-chickens" onclick="setFilter('tag-chickens', this)">🐔 Chickens</button>
+    <button class="filter-chip" data-filter="tag-alpacas" onclick="setFilter('tag-alpacas', this)">🦙 Alpacas</button>
+    <button class="filter-chip" data-filter="tag-ducks" onclick="setFilter('tag-ducks', this)">🦆 Ducks</button>
+    <button class="filter-chip" data-filter="tag-honey" onclick="setFilter('tag-honey', this)">🍯 Honey</button>
+    <button class="filter-chip" data-filter="tag-garden" onclick="setFilter('tag-garden', this)">🌱 Garden</button>
+    <button class="filter-chip" data-filter="tag-eggs" onclick="setFilter('tag-eggs', this)">🥚 Eggs</button>
+    <button class="filter-chip" data-filter="tag-seasonal" onclick="setFilter('tag-seasonal', this)">🌾 Seasonal</button>
+  </div>
+
+  <!-- Gallery -->
+  <main class="gallery-container">
+    <div id="gallery-loading" class="loading-spinner">Loading photos...</div>
+    <div id="gallery-empty" class="empty-state" style="display:none">
+      <span class="empty-icon">🌿</span>
+      <h3>No photos yet</h3>
+      <p>Be the first to drop a photo from the farm!</p>
+    </div>
+    <div id="gallery-grid" class="gallery-grid"></div>
+  </main>
+
+  <!-- Upload FAB -->
+  <button class="upload-fab" onclick="openUploadModal()" title="Upload Photos">+</button>
+
+  <!-- Admin Bulk Bar -->
+  <div id="bulk-bar" class="bulk-bar">
+    <span id="bulk-count">0 selected</span>
+    <div class="bulk-bar-actions">
+      <button class="btn btn-ghost btn-sm" style="color:white;border-color:rgba(255,255,255,0.4)" onclick="cancelSelect()">Cancel</button>
+      <button class="btn btn-amber btn-sm" onclick="bulkDownload()">⬇️ Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── UPLOAD MODAL ── -->
+<div id="upload-modal" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeUploadModal()">×</button>
+    <h2>📸 Drop Your Photos</h2>
+
+    <div class="input-group">
+      <label>Photos</label>
+      <input type="file" id="file-input" multiple accept="image/*" onchange="handleFileSelect(this)" style="padding:10px" />
+    </div>
+
+    <div id="file-preview" style="display:none; margin-bottom:14px">
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px" id="file-count"></div>
+      <div id="preview-thumbs" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    </div>
+
+    <div class="input-group">
+      <label>Caption (optional)</label>
+      <textarea id="upload-caption" placeholder="What's happening in this shot?"></textarea>
+    </div>
+
+    <div class="input-group">
+      <label>Tags</label>
+      <div class="tag-grid" id="tag-grid">
+        <button class="tag-btn" data-tag="chickens" onclick="toggleTag(this)">🐔 Chickens</button>
+        <button class="tag-btn" data-tag="alpacas" onclick="toggleTag(this)">🦙 Alpacas</button>
+        <button class="tag-btn" data-tag="ducks" onclick="toggleTag(this)">🦆 Ducks</button>
+        <button class="tag-btn" data-tag="honey" onclick="toggleTag(this)">🍯 Honey</button>
+        <button class="tag-btn" data-tag="garden" onclick="toggleTag(this)">🌱 Garden</button>
+        <button class="tag-btn" data-tag="eggs" onclick="toggleTag(this)">🥚 Eggs</button>
+        <button class="tag-btn" data-tag="seasonal" onclick="toggleTag(this)">🌾 Seasonal</button>
+        <button class="tag-btn" data-tag="other" onclick="toggleTag(this)">✨ Other</button>
+      </div>
+    </div>
+
+    <div class="upload-progress-bar" id="upload-progress-bar">
+      <div class="upload-progress-fill" id="upload-progress-fill"></div>
+    </div>
+
+    <div id="upload-error" class="msg-error"></div>
+    <div id="upload-success" class="msg-success"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeUploadModal()">Cancel</button>
+      <button class="btn btn-primary" id="upload-btn" onclick="submitUpload()">Upload Photos</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN LOGIN MODAL ── -->
+<div id="admin-modal" class="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAdminModal()">×</button>
+    <h2>🔐 Admin Login</h2>
+    <div class="input-group">
+      <label>Admin Password</label>
+      <input type="password" id="admin-password-input" placeholder="Enter admin password" />
+    </div>
+    <div id="admin-error" class="msg-error"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAdminModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAdminLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LIGHTBOX ── -->
+<div id="lightbox">
+  <div class="lightbox-header">
+    <div class="lightbox-header-left">
+      <button class="btn-icon" onclick="closeLightbox()">✕</button>
+      <span id="lb-season-badge" style="background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;font-size:12px;color:white;"></span>
+    </div>
+    <div style="display:flex;gap:8px" id="lb-admin-actions">
+      <button class="btn btn-amber btn-sm" id="lb-fav-btn" onclick="lightboxFavorite()">⭐ Favorite</button>
+      <button class="btn btn-ghost btn-sm" style="color:white;border-color:rgba(255,255,255,0.3)" onclick="lightboxDownload()">⬇️ Download</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2)" onclick="enterSelectMode()">☑️ Select</button>
+      <button class="btn btn-danger btn-sm" onclick="lightboxDelete()">🗑️</button>
+    </div>
+  </div>
+
+  <div class="lightbox-img-wrap">
+    <img id="lb-img" src="" alt="" />
+  </div>
+
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">‹</button>
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">›</button>
+
+  <div class="lightbox-info">
+    <div class="lightbox-meta" id="lb-meta"></div>
+    <div class="lightbox-caption" id="lb-caption"></div>
+    <div class="lightbox-tags" id="lb-tags"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
