@@ -10,6 +10,13 @@ const { addPhoto, getPhotos, getPhoto, toggleFavorite, deletePhoto } = require('
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Ensure required directories exist
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const THUMBS_DIR = path.join(UPLOADS_DIR, 'thumbs');
+[UPLOADS_DIR, THUMBS_DIR].forEach(dir => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
 const INVITE_CODE = process.env.INVITE_CODE || 'farmlife2024';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'trranch_admin';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev_secret';
